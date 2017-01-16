@@ -6580,11 +6580,11 @@ Define \$RTE_SDK and \$RTE_TARGET as per Intel DPDK documentation.
 
 =========================================" "$LINENO" 5
     fi
-    if test ! -f "$RTE_SDK/$RTE_TARGET/lib/librte_eal.a"; then
+    if test ! -f "$RTE_SDK/$RTE_TARGET/lib/librte_eal.so"; then
         as_fn_error $? "
 =========================================
 
-Cannot find \$RTE_SDK/\$RTE_TARGET/lib/librte_eal.a for Intel DPDK.
+Cannot find \$RTE_SDK/\$RTE_TARGET/lib/librte_eal.so for Intel DPDK.
 Define \$RTE_SDK and \$RTE_TARGET as per Intel DPDK documentation.
 
 =========================================" "$LINENO" 5
