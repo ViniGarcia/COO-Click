@@ -42,7 +42,13 @@
 # include <rte_common.h>
 # include <rte_eal.h>
 # include <rte_lcore.h>
+# include <rte_ethdev.h>
 #endif // HAVE_DPDK
+
+#ifdef HAVE_OSV
+#include <osv/app.hh>
+#include <osv/sched.hh>
+#endif // HAVE_OSV
 
 #include <click/lexer.hh>
 #include <click/routerthread.hh>
@@ -514,9 +520,29 @@ void do_set_affinity(pthread_t p, int cpu) {
 # define do_set_affinity(p, cpu) /* nothing */
 #endif
 
+/*
+OSV hook for stopping click thread
+Cant use goto here?
+*/
+#if HAVE_OSV
+static void
+stop_on_osv(){
+  int exit_value;
+  printf("Request Termination has been called. Cleanup\n");
+  rte_eal_mp_wait_lcore();
+  click_router->adjust_runcount(Router::STOP_RUNCOUNT);
+}
+#endif
+
 int
 main(int argc, char **argv)
 {
+
+#if HAVE_OS
+     osv::application::on_termination_request(stop_on_osv);
+     //printf("Installed termination callback");
+#endif // HAVE_OSV
+     
   click_static_initialize();
   errh = ErrorHandler::default_handler();
 
@@ -708,10 +734,12 @@ particular purpose.\n");
           errh->warning("In DPDK mode, set the number of cores and affinity with DPDK EAL arguments");
       }
       int n_eal_args = rte_eal_init(dpdk_arg.size(), dpdk_arg.data());
-      if (n_eal_args < 0)
+      if (n_eal_args < 0){
+      printf("%d\n",n_eal_args);
       rte_exit(EXIT_FAILURE,
              "Click was built with Intel DPDK support but there was an\n"
              "          error parsing the EAL arguments.\n");
+    }
       click_nthreads = rte_lcore_count();
     }
 #endif
@@ -799,7 +827,6 @@ particular purpose.\n");
 
     // run driver
     click_master->thread(0)->driver();
-
     // now that the driver has stopped, SIGINT gets default handling
     running = false;
     click_fence();

@@ -112,6 +112,15 @@ include dpdk.mk
 EXTRA_DRIVER_OBJS := dpdkdevice.o $(EXTRA_DRIVER_OBJS)
 endif
 
+USE_OSV = @USE_OSV@
+ifeq ($(USE_OSV),yes)
+OSV_SDK = @OSV_SDK@
+INCLUDES += -I$(OSV_SDK)
+INCLUDES += -I$(OSV_SDK)/arch/x64
+INCLUDES += -I$(OSV_SDK)/arch/common
+INCLUDES += -I$(OSV_SDK)/include
+endif
+
 ifndef MINDRIVER
 DRIVER = click
 ELEMENTSCONF = elements

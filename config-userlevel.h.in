@@ -217,6 +217,9 @@
 /* Define if a Click user-level driver uses Intel DPDK. */
 #undef HAVE_DPDK
 
+/* Define if a Click user-level driver uses OSv. */
+#undef HAVE_OSV
+
 /* Define if Click should use Valgrind client requests. */
 #undef HAVE_VALGRIND
 

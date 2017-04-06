@@ -24,14 +24,14 @@ _LDLIBS-y += -L$(RTE_SDK_BIN)/lib
 #
 
 # Link only the libraries used in the application
-LDFLAGS += --as-needed
+#LDFLAGS += --as-needed
 
-_LDLIBS-y += -Wl,--whole-archive
+#_LDLIBS-y += -Wl,--whole-archive
 
 _LDLIBS-$(CONFIG_RTE_BUILD_COMBINE_LIBS)    += -lintel_dpdk
 
-_LDLIBS-y += $(EXECENV_LDLIBS)
-_LDLIBS-y += -Wl,--no-whole-archive
+#_LDLIBS-y += $(EXECENV_LDLIBS)
+#_LDLIBS-y += -Wl,--no-whole-archive
 
 DPDK_LIB=$(_LDLIBS-y) $(CPU_LDLIBS) $(EXTRA_LDLIBS)
 
