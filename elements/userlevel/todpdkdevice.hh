@@ -154,6 +154,7 @@ private:
         Timer timeout;
     } __attribute__((aligned(64)));
 
+    static String out_bytes_handler(Element *e, void *) CLICK_COLD;
     static String n_sent_handler(Element *, void *) CLICK_COLD;
     static String n_dropped_handler(Element *, void *) CLICK_COLD;
     static int reset_counts_handler(const String &, Element *, void *,
@@ -173,6 +174,7 @@ private:
     unsigned long _n_sent;
     unsigned long _n_dropped;
     bool _congestion_warning_printed;
+    unsigned long long _total_bytes_out;
 };
 
 CLICK_ENDDECLS

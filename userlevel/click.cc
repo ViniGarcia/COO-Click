@@ -538,9 +538,11 @@ int
 main(int argc, char **argv)
 {
 
-#if HAVE_OS
+#if HAVE_OSV
      osv::application::on_termination_request(stop_on_osv);
-     //printf("Installed termination callback");
+     //Reopen stdout and stderr to write on files
+     //freopen("click_out.txt","w",stdout);
+     freopen("click_errors.txt","w",stderr);
 #endif // HAVE_OSV
      
   click_static_initialize();

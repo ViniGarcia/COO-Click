@@ -107,16 +107,20 @@ public:
     bool run_task(Task *);
 
 private:
-
+    static String in_bytes_handler(Element *e, void *) CLICK_COLD;
     static String count_handler(Element*, void*) CLICK_COLD;
+    static int reset_in_bytes_handler(const String &, Element *e, void *,
+                                        ErrorHandler *) CLICK_COLD;
     static int reset_count_handler(const String&, Element*, void*,
                                    ErrorHandler*) CLICK_COLD;
+
 
     DPDKDevice* _dev;
     int _queue_id;
     bool _promisc;
     unsigned int _burst_size;
     unsigned long _count;
+    unsigned long long _total_bytes_in;
 
     Task _task;
 };

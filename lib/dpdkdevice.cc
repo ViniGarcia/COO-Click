@@ -18,6 +18,8 @@
 
 #include <click/config.h>
 #include <click/dpdkdevice.hh>
+#include <iostream>
+#include <fstream>
 
 CLICK_DECLS
 
@@ -147,6 +149,12 @@ int DPDKDevice::initialize_device(ErrorHandler *errh)
                 i, port_id, numa_node);
 
     int err = rte_eth_dev_start(port_id);
+
+    std::ofstream otp;
+    otp.open("clickPorts",std::ofstream::out | std::ofstream::app);
+    otp << port_id;
+    otp.close();
+
     if (err < 0)
         return errh->error(
             "Cannot start DPDK port %u: error %d", port_id, err);

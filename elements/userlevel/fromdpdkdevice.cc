@@ -29,7 +29,7 @@ CLICK_DECLS
 
 FromDPDKDevice::FromDPDKDevice() :
     _dev(0), _queue_id(0), _promisc(true), _burst_size(32),
-    _count(0), _task(this)
+    _count(0), _total_bytes_in(0), _task(this)
 {
 }
 
@@ -80,6 +80,7 @@ void FromDPDKDevice::cleanup(CleanupStage)
 bool FromDPDKDevice::run_task(Task * t)
 {
     struct rte_mbuf *pkts[_burst_size];
+    struct rte_eth_stats eth_stats;
 
     unsigned n = rte_eth_rx_burst(_dev->port_id, _queue_id, pkts, _burst_size);
     for (unsigned i = 0; i < n; ++i) {
@@ -97,6 +98,9 @@ bool FromDPDKDevice::run_task(Task * t)
     }
     _count += n;
 
+    rte_eth_stats_get(_dev->port_id,&eth_stats);
+    _total_bytes_in = eth_stats.ibytes;
+
     /* We reschedule directly, as we cannot know if there is actually packet
      * available and DPDK has no select mechanism*/
     t->fast_reschedule();
@@ -104,10 +108,23 @@ bool FromDPDKDevice::run_task(Task * t)
     return n;
 }
 
+String FromDPDKDevice::in_bytes_handler(Element *e, void *){
+    FromDPDKDevice *fnd = static_cast<FromDPDKDevice *>(e);
+    return String(fnd->_total_bytes_in);
+}
+
 String FromDPDKDevice::count_handler(Element *e, void *)
 {
     FromDPDKDevice *fnd = static_cast<FromDPDKDevice *>(e);
     return String(fnd->_count);
+}
+
+int FromDPDKDevice::reset_in_bytes_handler(const String &, Element *e, void *,
+                                        ErrorHandler *)
+{
+    FromDPDKDevice *fnd = static_cast<FromDPDKDevice *>(e);
+    rte_eth_stats_reset(fnd->_dev->port_id);
+    return 0;
 }
 
 int FromDPDKDevice::reset_count_handler(const String &, Element *e, void *,
@@ -121,7 +138,10 @@ int FromDPDKDevice::reset_count_handler(const String &, Element *e, void *,
 void FromDPDKDevice::add_handlers()
 {
     add_read_handler("count", count_handler, 0);
+    add_read_handler("in_bytes",in_bytes_handler, 0);
     add_write_handler("reset_count", reset_count_handler, 0,
+                          Handler::BUTTON);
+    add_write_handler("reset_in_bytes", reset_in_bytes_handler, 0,
                           Handler::BUTTON);
 }
 

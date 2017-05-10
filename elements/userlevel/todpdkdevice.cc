@@ -28,7 +28,7 @@ CLICK_DECLS
 ToDPDKDevice::ToDPDKDevice() :
     _iqueues(), _dev(0), _queue_id(0), _blocking(false),
     _iqueue_size(1024), _burst_size(32), _timeout(0), _n_sent(0),
-    _n_dropped(0), _congestion_warning_printed(false)
+    _n_dropped(0), _total_bytes_out(0), _congestion_warning_printed(false)
 {
 }
 
@@ -101,6 +101,12 @@ String ToDPDKDevice::n_sent_handler(Element *e, void *)
     return String(tdd->_n_sent);
 }
 
+String ToDPDKDevice::out_bytes_handler(Element *e, void *)
+{
+    ToDPDKDevice *tdd = static_cast<ToDPDKDevice *>(e);
+    return String(tdd->_total_bytes_out);
+}
+
 String ToDPDKDevice::n_dropped_handler(Element *e, void *)
 {
     ToDPDKDevice *tdd = static_cast<ToDPDKDevice *>(e);
@@ -111,6 +117,8 @@ int ToDPDKDevice::reset_counts_handler(const String &, Element *e, void *,
                                        ErrorHandler *)
 {
     ToDPDKDevice *tdd = static_cast<ToDPDKDevice *>(e);
+
+    rte_eth_stats_reset(tdd->_dev->port_id);
     tdd->_n_sent = 0;
     tdd->_n_dropped = 0;
     return 0;
@@ -119,6 +127,7 @@ int ToDPDKDevice::reset_counts_handler(const String &, Element *e, void *,
 void ToDPDKDevice::add_handlers()
 {
     add_read_handler("n_sent", n_sent_handler, 0);
+    add_read_handler("out_bytes", out_bytes_handler, 0);
     add_read_handler("n_dropped", n_dropped_handler, 0);
     add_write_handler("reset_counts", reset_counts_handler, 0,
                       Handler::BUTTON);
@@ -165,6 +174,9 @@ void ToDPDKDevice::run_timer(Timer *)
 void ToDPDKDevice::flush_internal_queue(InternalQueue &iqueue) {
     unsigned sent = 0;
     unsigned r;
+
+    struct rte_eth_stats eth_stats;
+
     /* sub_burst is the number of packets DPDK should send in one call if
      * there is no congestion, normally 32. If it sends less, it means
      * there is no more room in the output ring and we'll need to come
@@ -194,6 +206,9 @@ void ToDPDKDevice::flush_internal_queue(InternalQueue &iqueue) {
     } while (r == sub_burst && iqueue.nr_pending > 0);
 
     _n_sent += sent;
+
+    rte_eth_stats_get(_dev->port_id,&eth_stats);
+    _total_bytes_out = eth_stats.obytes;
 
     _lock.release();
 
