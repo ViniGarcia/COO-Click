@@ -108,7 +108,7 @@ Router::~Router()
 
     // Delete the ArenaFactory, which detaches the Arenas
     delete _arena_factory;
-
+    
     // Clean up elements in reverse configuration order
     if (_state == ROUTER_LIVE) {
         // Unschedule tasks and timers
@@ -121,7 +121,7 @@ Router::~Router()
         for (int i = _elements.size() - 1; i >= 0; i--)
             _elements[i]->cleanup(Element::CLEANUP_NO_ROUTER);
     }
-
+    
     // Delete elements in reverse configuration order
     if (_element_configure_order.size())
         for (int ord = _elements.size() - 1; ord >= 0; ord--)

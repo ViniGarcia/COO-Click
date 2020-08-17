@@ -266,11 +266,11 @@ Socket::cleanup(CleanupStage)
     _wq->kill();
   if (_fd >= 0) {
     // shut down the listening socket in case we forked
-#ifdef SHUT_RDWR
+/*#ifdef SHUT_RDWR
     shutdown(_fd, SHUT_RDWR);
 #else
     shutdown(_fd, 2);
-#endif
+#endif*/
     close(_fd);
     if (_family == AF_UNIX)
       unlink(_local_pathname.c_str());

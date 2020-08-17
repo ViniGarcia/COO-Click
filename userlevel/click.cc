@@ -528,8 +528,9 @@ Cant use goto here?
 static void
 stop_on_osv(){
   int exit_value;
-  printf("Request Termination has been called. Cleanup\n");
-  rte_eal_mp_wait_lcore();
+
+  rte_eal_mp_wait_lcore();   
+  //click_router->please_stop_driver();
   click_router->adjust_runcount(Router::STOP_RUNCOUNT);
 }
 #endif
@@ -540,8 +541,6 @@ main(int argc, char **argv)
 
 #if HAVE_OSV
      osv::application::on_termination_request(stop_on_osv);
-     //Reopen stdout and stderr to write on files
-     //freopen("click_out.txt","w",stdout);
      freopen("click_errors.txt","w",stderr);
 #endif // HAVE_OSV
      
